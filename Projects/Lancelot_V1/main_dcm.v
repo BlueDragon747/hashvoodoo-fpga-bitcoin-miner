@@ -80,7 +80,7 @@ module main_dcm
   output        CLK_VALID
  );
 
-	parameter DCM_DIVIDER = 10;	
+	parameter DCM_DIVIDER = 40;
 	parameter DCM_MULTIPLIER = 60;
 
   // Input buffering
@@ -101,7 +101,7 @@ module main_dcm
   wire        clkfxdv_unused;
 
   DCM_CLKGEN
-  #(.CLKFXDV_DIVIDE        (2),
+  #(.CLKFXDV_DIVIDE        (8),
     .CLKFX_DIVIDE          (DCM_DIVIDER),
     .CLKFX_MULTIPLY        (DCM_MULTIPLIER),
     .SPREAD_SPECTRUM       ("NONE"),

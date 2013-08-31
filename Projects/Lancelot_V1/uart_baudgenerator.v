@@ -13,8 +13,8 @@ module uart_baudgenerator(
 
 	//Parameters:
 	//================================================
-	parameter CLOCK = 25000000; // 25MHz
-	parameter BAUD = 9600;
+	parameter CLOCK = 100000000; // 25MHz
+	parameter BAUD = 115200;
 	parameter ACCWIDTH = 16;
 	parameter ROUNDBITS = 5;
 	parameter INC = ((BAUD<<(ACCWIDTH-(ROUNDBITS-1)))+(CLOCK>>ROUNDBITS))/(CLOCK>>(ROUNDBITS-1));

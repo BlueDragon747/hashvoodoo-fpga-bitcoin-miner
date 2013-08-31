@@ -15,8 +15,8 @@ module uart_tx(
 
 	//Parameters:
 	//================================================
-	parameter CLOCK = 25000000; 	//Overridden by parent UART core
-	parameter BAUD = 9600;			//Overridden by parent UART core
+	parameter CLOCK = 100000000; 	//Overridden by parent UART core
+	parameter BAUD = 115200;			//Overridden by parent UART core
 
 	//IO Definitions:
 	//================================================

@@ -10,7 +10,7 @@ module HASHVOODOO (
 		RxD, 
 		TxD, 
 		led, 
-		dip, 
+		dip,
 		reset_a, 
 		reset_b, 
 		reset_select
@@ -18,10 +18,10 @@ module HASHVOODOO (
 
 	//Parameters:
 	//================================================
-	parameter CLOCK_RATE = 25000000;					//Input Clock Output from Controller in Hz
-	parameter DCM_DIVIDER = 10;						//Starting point for DCM divider (25Mhz / 10 = 2.5Mhz increments)
+	parameter CLOCK_RATE = 100000000;					//Input Clock Output from Controller in Hz
+	parameter DCM_DIVIDER = 40;						//Starting point for DCM divider (25Mhz / 10 = 2.5Mhz increments)
 	parameter DCM_MULTIPLIER_START = 60;			//Starting point for DCM multiplier (2.5Mhz x 60 = 150Mhz)
-	parameter DCM_MULTIPLIER_CAP = 88;				//Max Point Allowed for DCM multiplier (Safety ceiling)
+	parameter DCM_MULTIPLIER_CAP = 128;				//Max Point Allowed for DCM multiplier (Safety ceiling)
 	parameter DCM_MULTIPLIER_MIN = 20;				//Minimum Allowed for DCM multiplier (If it falls below this something is seriously wrong)
 	parameter UART_BAUD_RATE = 115200;				//Baud Rate to use for UART (BPS)
 	parameter UART_SAMPLE_POINT = 8;					//Point in the oversampled wave to sample the bit state for the UART (6-12 should be valid)
