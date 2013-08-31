@@ -4,7 +4,7 @@
 // Paul Mumby 2012
 //////////////////////////////////////////////////////////////////////////////////
 module HASHVOODOO (
-		clk_p, 
+//		clk_p, 
 		clk_n, 
 		clk_comm, 
 		RxD, 
@@ -13,54 +13,60 @@ module HASHVOODOO (
 		dip,
 		reset_a, 
 		reset_b, 
-		reset_select
+		reset_select, 
+		TMP_SCL, 
+		TMP_SDA, 
+		TMP_ALERT
 	);
 
 	//Parameters:
 	//================================================
-	parameter CLOCK_RATE = 100000000;					//Input Clock Output from Controller in Hz
-	parameter DCM_DIVIDER = 40;						//Starting point for DCM divider (25Mhz / 10 = 2.5Mhz increments)
-	parameter DCM_MULTIPLIER_START = 60;			//Starting point for DCM multiplier (2.5Mhz x 60 = 150Mhz)
-	parameter DCM_MULTIPLIER_CAP = 128;				//Max Point Allowed for DCM multiplier (Safety ceiling)
-	parameter DCM_MULTIPLIER_MIN = 20;				//Minimum Allowed for DCM multiplier (If it falls below this something is seriously wrong)
-	parameter UART_BAUD_RATE = 115200;				//Baud Rate to use for UART (BPS)
-	parameter UART_SAMPLE_POINT = 8;					//Point in the oversampled wave to sample the bit state for the UART (6-12 should be valid)
-	parameter CLOCK_FLASH_BITS = 26;					//Number of bits for divider of flasher. (28bit = approx 67M Divider)
+	parameter CLOCK_RATE = 100000000;		//Input Clock Output from Controller in Hz
+	parameter DCM_DIVIDER = 40;				//Starting point for DCM divider (25Mhz / 10 = 2.5Mhz increments)
+	parameter DCM_MULTIPLIER_START = 60;	//Starting point for DCM multiplier (2.5Mhz x 60 = 150Mhz)
+	parameter DCM_MULTIPLIER_CAP = 128;		//Max Point Allowed for DCM multiplier (Safety ceiling)
+	parameter DCM_MULTIPLIER_MIN = 20;		//Minimum Allowed for DCM multiplier (If it falls below this something is seriously wrong)
+	parameter UART_BAUD_RATE = 115200;		//Baud Rate to use for UART (BPS)
+	parameter UART_SAMPLE_POINT = 8;		//Point in the oversampled wave to sample the bit state for the UART (6-12 should be valid)
+	parameter CLOCK_FLASH_BITS = 26;		//Number of bits for divider of flasher. (28bit = approx 67M Divider)
 	
 	//IO Definitions:
 	//================================================
-   input clk_p;			//Input Clock From Controller (P signal of diff pair)
-   input clk_n;			//Input Clock From Controller (N signal of diff pair)
-   input clk_comm;		//Input Comm Clock From Controller (Single ended)
-   input RxD;				//UART RX Pin (From Controller)
-   output TxD;				//UART TX Pin  (To Controller)
-   output [3:0] led;		//LED Array
-	input [3:0]dip;		//DIP Switch Array
-	input reset_a;			//Reset Signal A (position dependant) from Controller
-	input reset_b;			//Reset Signal B (position dependant) from Controller
-	input reset_select;	//Reset Selector (hard wired based on position)
+//   input clk_p;			                //Input Clock From Controller (P signal of diff pair)
+    input clk_n;			                //Input Clock From Controller (N signal of diff pair)
+    input clk_comm;		                    //Input Comm Clock From Controller (Single ended)
+    input RxD;				                //UART RX Pin (From Controller)
+    output TxD;				                //UART TX Pin  (To Controller)
+    output [3:0] led;		                //LED Array
+	input [3:0]dip;		                    //DIP Switch Array
+	input reset_a;			                //Reset Signal A (position dependant) from Controller
+	input reset_b;			                //Reset Signal B (position dependant) from Controller
+	input reset_select;	                    //Reset Selector (hard wired based on position)
+	input TMP_SCL, TMP_SDA, TMP_ALERT;	    // Unused but set to PULLUP so as to avoid turning on the HOT LED
+    										// TODO implement I2C protocol to talk to temperature sensor chip (TMP101?)
+    										// and drive FAN speed control output.
 
 	//Register/Wire Definitions:
 	//================================================
 	reg reset;								//Actual Reset Signal
 	wire clk_buf;							//Actually Used Clock Signals
 	wire clk_dcm;							//Output of hash clock DCM
-	wire clk_comm_buf;							//Output of comm clock DCM
+	wire clk_comm_buf;						//Output of comm clock DCM
 	wire clock_flash;						//Flasher output (24bit divider of clock)
 	wire miner_busy;						//Miner Busy Flag
-   wire [32:0] slave_nonces;			//Nonce found by worker TODO: Rename/Cleanup (this is a holdover from the icarus pair code)
-   wire new_nonces;						//Flag indicating new nonces found
-   wire serial_send;						//Serial Send flag, Triggers UART to begin sending what's in it's buffer
-   wire serial_busy;						//Serial Busy flag, Indicates the UART is currently working
-   wire [31:0] golden_nonce;			//Overall Found Golden Nonce TODO: Cleanup along with previous holdovers from icarus code
-   wire [255:0] midstate, data2;		//Mistate and Data2, the main payload for a new job.
-	wire start_mining;					//Start Mining flag. This flag going high will trigger the worker to begin hashing on it's buffer
+    wire [32:0] slave_nonces;			    //Nonce found by worker TODO: Rename/Cleanup (this is a holdover from the icarus pair code)
+    wire new_nonces;						//Flag indicating new nonces found
+    wire serial_send;						//Serial Send flag, Triggers UART to begin sending what's in it's buffer
+    wire serial_busy;						//Serial Busy flag, Indicates the UART is currently working
+    wire [31:0] golden_nonce;			    //Overall Found Golden Nonce TODO: Cleanup along with previous holdovers from icarus code
+    wire [255:0] midstate, data2;		    //Mistate and Data2, the main payload for a new job.
+	wire start_mining;					    //Start Mining flag. This flag going high will trigger the worker to begin hashing on it's buffer
 	wire got_ticket;						//Got Ticket flag indicates the local worker found a new nonce. TODO: Again, cleanup
 	wire led_nonce_fade;					//This is the output from the fader, jumps to full power when nonce found and fades out
-	wire led_serial_fade;				//Output from fader for serial activity.
-	reg new_ticket;						//Related to got_ticket TODO: Cleanup old icarus stuff
-	reg [3:0]ticket_CS = 4'b0001;		//Again... Cleanup
-	reg [3:0]ticket_NS;					//Again... Cleanup
+	wire led_serial_fade;				    //Output from fader for serial activity.
+	reg new_ticket;						    //Related to got_ticket TODO: Cleanup old icarus stuff
+	reg [3:0]ticket_CS = 4'b0001;		    //Again... Cleanup
+	reg [3:0]ticket_NS;					    //Again... Cleanup
 	wire dcm_prog_en;
 	wire dcm_prog_data;
 	wire dcm_prog_done;
@@ -72,26 +78,32 @@ module HASHVOODOO (
 	//Assignments:
 	//================================================
 	assign new_nonces = new_ticket;												//TODO: Cleanup
-	assign led[0] = (led_nonce_fade || identify_flasher);					//LED0 (Green): New Nonce Beacon (fader)
+	assign led[0] = (led_nonce_fade || identify_flasher);				//LED0 (Green): New Nonce Beacon (fader)
 	assign led[1] = (clock_flash || ~dcm_valid || identify_flasher);	//LED1 (Red): Clock Heartbeat (blinks to indicate working input clock)
 																							//		Off = no clock
 																							//		On Solid = dcm invalid.
 	assign led[2] = (led_serial_fade || identify_flasher);				//LED2 (Blue): UART Activity (blinks and fades on either rx or tx)
-	assign led[3] = (~miner_busy || identify_flasher);						//LED3 (Amber): Idle Indicator. Lights when miner has nothing to do.
+	assign led[3] = (~miner_busy || identify_flasher);					//LED3 (Amber): Idle Indicator. Lights when miner has nothing to do.
 	assign identify_flasher = (clock_flash && identify_flag);			//Identify Mode (ALL LEDs flash with heartbeat)
 	
 	//Module Instantiation:
 	//================================================
 	
 	//LVDS Clock Buffer
-	IBUFGDS #(
-			.DIFF_TERM("TRUE"),
-			.IOSTANDARD("DEFAULT")
-		) CLK_LVDS_BUF (
-			.O(clk_buf),
-			.I(clk_p),	//Diff_p clock input
-			.IB(clk_n)	//Diff_n clock input
-		);
+//	IBUFG #(
+//			.DIFF_TERM("TRUE"),
+//			.IOSTANDARD("LVCMOS33")
+//		) CLK_LVDS_BUF (
+//			.O(clk_buf),
+//			.I(clk_p),	//Diff_p clock input
+//			.IB(clk_n)	//Diff_n clock input
+//		);
+		
+	IBUFG  CLK_LVDS_BUF 
+	    (
+	        .I   (clk_n), 
+            .O   (clk_buf)
+        );
 	
 	//Comm Clock Buffer
 	BUFG CLK_COMM_BUF

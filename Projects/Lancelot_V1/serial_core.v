@@ -5,7 +5,7 @@
 // By Paul Mumby
 // Licensed Under GNU GPL V3
 //////////////////////////////////////////////////////////////////////////////////
-module serial_core #(parameter CLOCK=100000000, BAUD=115200, SAMPLE_POINT=8)(
+module serial_core #(parameter CLOCK=25000000, BAUD=115200, SAMPLE_POINT=8)(
 	clk,
 	rx,
 	tx,

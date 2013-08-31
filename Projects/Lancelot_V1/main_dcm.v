@@ -101,7 +101,7 @@ module main_dcm
   wire        clkfxdv_unused;
 
   DCM_CLKGEN
-  #(.CLKFXDV_DIVIDE        (8),
+  #(.CLKFXDV_DIVIDE        (4),
     .CLKFX_DIVIDE          (DCM_DIVIDER),
     .CLKFX_MULTIPLY        (DCM_MULTIPLIER),
     .SPREAD_SPECTRUM       ("NONE"),
